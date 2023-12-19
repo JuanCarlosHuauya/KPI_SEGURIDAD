@@ -1,0 +1,56 @@
+El script KPIs.py atribuye el siguiente procedimiente:
+
+1. Se conecta a Google Drive y se obtiene acceso al archivo de Excel.
+2. Lee los datos del archivo de Excel y los almacena en un DataFrame de pandas.
+3. Se conecta a Power BI utilizando las credenciales proporcionadas.
+4. Crea un nuevo conjunto de datos en Power BI con el nombre especificado.
+5. Carga los datos del DataFrame en el conjunto de datos.
+6. Genera una serie de indicadores en Power BI basados en los datos cargados.
+
+Para la ejecución de este proceso se realizara lo siguiente:
+
+Primero, necesitas instalar las bibliotecas requeridas utilizando pip:
+pip install pandas gspread pbpy
+Luego, utiliza el siguiente código para extraer la información de Excel en repositorio Google Drive a Power BI y generar indicadores:
+
+python
+Download
+Copy code
+import pandas as pd
+import gspread
+from pbpy import Client
+
+# Conexión a Google Drive y acceso al archivo de Excel
+gc = gspread.service_account('path/to/your/service/account/credentials.json')
+sh = gc.open('Your Excel File Name').sheet1
+
+# Lectura de datos de Excel y conexión a Power BI
+data = sh.get_all_records()
+client = Client('path/to/your/power/bi/credentials.json')
+
+# Creación de un conjunto de datos en Power BI
+dataset = client.create_dataset('Your Dataset Name')
+
+# Carga de datos a Power BI
+table = dataset.table('Your Table Name')
+table.upload(data)
+
+# Generación de indicadores en Power BI
+indicators = {
+    'average_revenue': {'column': 'Revenue', 'type': 'Average'},
+    'max_revenue': {'column': 'Revenue', 'type': 'Max'},
+    'min_revenue': {'column': 'Revenue', 'type': 'Min'},
+    'sum_revenue': {'column': 'Revenue', 'type': 'Sum'},
+    'count_orders': {'column': 'OrderID', 'type': 'Count'},
+}
+
+for indicator_name, indicator_details in indicators.items():
+    client.create_indicator(
+        dataset_id=dataset.id,
+        table_name=table.name,
+        indicator_name=indicator_name,
+        indicator_type=indicator_details['type'],
+        column_name=indicator_details['column'],
+    )
+
+Donde se debe reemplazar 'path/to/your/service/account/credentials.json', 'Your Excel File Name', 'Your Dataset Name', y 'Your Table Name' con tus propios valores. Además, asegúrate de que la columna 'Revenue' y 'OrderID' existan en tu archivo de Excel para que los indicadores funcionen correctamente.
